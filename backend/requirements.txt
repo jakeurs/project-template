@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+neo4j
+websockets
+pytest
+requests
+python-multipart
+httpx

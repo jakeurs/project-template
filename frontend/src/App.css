@@ -1,0 +1,35 @@
+.App {
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+.App-header {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+}
+
+.status-bar {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.status-connected { color: #4caf50; }
+.status-db-connection-pending... { color: #ffeb3b; }
+.status-disconnected { color: #f44336; }
+
+.message-section {
+  padding: 20px;
+}
+
+.message-list {
+  list-style: none;
+  padding: 0;
+}
+
+.message-item {
+  background: #f4f4f4;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 4px;
+}
