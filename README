@@ -1,0 +1,158 @@
+# Autonomous Development Environment Project Template
+
+**STATUS: TEMPLATE / SCAFFOLD**
+**TARGET AUDIENCE: AI AGENTS (LLMs) & AUTOMATED SYSTEMS**
+
+## 1. Orientation & Environment Topology
+
+You are operating within a **Docker-outside-of-Docker (DooD)** architecture. You (the Agent) are isolated from the application you are building. You cannot run application code directly; you must execute it via the sibling containers using the provided tools.
+
+### Container Map
+
+| Service      | Container Name   | Internal DNS   | Role                                                        |
+| ------------ | ---------------- | -------------- | ----------------------------------------------------------- |
+| **Agent**    | `opencode_agent` | `agent`        | **YOU.** The builder. Has access to `/var/run/docker.sock`. |
+| **Backend**  | `*_dev_backend`  | `dev_backend`  | Python/FastAPI. Hot-reloads on `/app/backend`.              |
+| **Frontend** | `*_dev_frontend` | `dev_frontend` | Node/Vite/React. Hot-reloads on `/app/frontend`.            |
+| **Database** | `*_neo4j`        | `neo4j`        | Neo4j Community.                                            |
+
+### ⚠️ Critical Constraints
+
+1. **NO LOCAL EXECUTION:** Do not try to run `uvicorn` or `npm run dev` inside your own container. It will fail.
+2. **TOOL USAGE:** Use `python .opencode/tools/container_exec.py <container> <command>` for all execution.
+3. **FILE EDITS:** You share the `/workspace` volume with the siblings. Edits you make to `./backend` or `./frontend` are immediately reflected in the running services.
+
+---
+
+## 2. Boot Sequence (Mandatory)
+
+Upon starting a session, you **MUST** run the orientation script to verify the state of the environment.
+
+```bash
+python .opencode/tools/check_env.py
+
+```
+
+* **If successful:** Proceed to read `specs.md` and `plan.md`.
+* **If failed:** Diagnose the Docker state using `docker ps`.
+
+---
+
+## 3. Architectural Standards (Design by Contract)
+
+### 3.1. Contract-Driven Development (CDD)
+
+**Rule:** You must define **Interfaces** before **Implementation**.
+
+* **Frontend:** Create TypeScript interfaces in `frontend/src/types/` defining the data shape.
+* **Backend:** Create Pydantic models in `backend/app/schemas/` defining the API contract.
+* **Verification:** Confirm the backend Pydantic model matches the frontend TypeScript interface *before* writing logic.
+
+### 3.2. Database Interaction (Repository Pattern)
+
+**Rule:** Never write Cypher queries directly in API routes (`main.py` or `routers/`).
+
+* **Pattern:** Use the Repository Pattern to isolate data access.
+* **Requirement:** All DB access must go through a `Repository` class in `backend/app/repositories/`.
+* **Dependency Injection:** Inject repositories into routes via FastAPI `Depends`.
+
+**❌ Bad (Direct Access):**
+
+```python
+@app.get("/users")
+async def get_users():
+    result = session.run("MATCH (n:User) RETURN n") # FORBIDDEN
+
+```
+
+**✅ Good (Repository Pattern):**
+
+```python
+# backend/app/repositories/user_repo.py
+class UserRepository:
+    def __init__(self, driver):
+        self.driver = driver
+
+    def get_all(self) -> List[User]:
+        with self.driver.session() as session:
+            # ... implementations ...
+
+```
+
+### 3.3. Communication Strategy (WebSockets First)
+
+**Rule:** This is a real-time application. Prefer WebSockets over REST for state updates.
+
+* **Frontend:** Use a single `WebSocketContext` provider to manage the connection.
+* **Backend:** Use a `ConnectionManager` class to handle broadcasting.
+* **Protocol:** All WebSocket messages must follow the `{ type: string, payload: any }` JSON structure.
+
+---
+
+## 4. The "Ralph Loop" Workflow
+
+Your goal is to complete tasks defined in `plan.md` using the Sisyphus self-healing loop.
+
+1. **READ:** Load the next incomplete task from `plan.md`.
+2. **SPECIFY:** Create/Update the interface contract (TypeScript/Pydantic).
+3. **TEST (Red):** Write a failing test case.
+* Backend: `container_exec.py dev_backend pytest tests/test_new_feature.py`
+* Frontend: `container_exec.py dev_frontend npm run test`
+
+
+4. **IMPLEMENT (Green):** Write the code to satisfy the test.
+5. **VERIFY:** Run the test again.
+* *If Pass:* Mark task complete in `plan.md`.
+* *If Fail:* Analyze logs (`docker logs --tail 50 dev_backend`) and retry.
+
+
+
+---
+
+## 5. Tool Reference
+
+### `container_exec.py`
+
+Executes commands in sibling containers.
+
+* **Usage:** `python .opencode/tools/container_exec.py <container_name> <command>`
+* **Example:** `python .opencode/tools/container_exec.py dev_backend poetry run pytest`
+
+### `ask_gemini.py`
+
+Calls the Architect model for high-level planning.
+
+* **Usage:** `python .opencode/tools/ask_gemini.py "How should I structure the auth middleware?"`
+* **Constraint:** Use this ONLY when stuck on architecture or planning.
+
+### `ralph_loop.sh`
+
+The autonomous drive loop.
+
+* **Usage:** `bash ralph_loop.sh`
+* **Note:** This script automatically restarts the agent on non-zero exit codes.
+
+---
+
+## 6. Directory Map
+
+```text
+/workspace
+├── .opencode/           # Agent Configuration & Tools
+│   └── tools/           # check_env.py, container_exec.py
+├── backend/             # FastAPI Application
+│   ├── app/
+│   │   ├── routers/     # API Endpoints
+│   │   ├── repositories/# Neo4j Data Access (Cypher)
+│   │   ├── schemas/     # Pydantic Models (Contracts)
+│   │   └── websockets/  # ConnectionManager
+├── frontend/            # Vite + React Application
+│   ├── src/
+│   │   ├── types/       # TypeScript Interfaces (Contracts)
+│   │   ├── components/  # React Components
+│   │   └── context/     # WebSocket Provider
+├── specs.md             # The Source of Truth (Technical Specs)
+├── plan.md              # The Todo List (Sequential Tasks)
+└── docker-compose.yml   # Infrastructure Definition
+
+```
