@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-50;
+  }
+}
+
+/* Custom scrollbar for log viewer */
+.log-viewer::-webkit-scrollbar {
+  width: 8px;
+}
+.log-viewer::-webkit-scrollbar-track {
+  background: transparent;
+}
+.log-viewer::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+.log-viewer::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}

@@ -1,7 +1,2 @@
-.opencode
-docker
-monitor
 .env
-agents.md
-docker-compose.yml
 ralph_loop.sh

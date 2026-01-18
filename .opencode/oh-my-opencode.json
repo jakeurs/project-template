@@ -1,0 +1,18 @@
+{
+  "sisyphus": {
+    "enabled": true,
+    "strategy": "self-healing",
+    "max_iterations": 10
+  },
+  "mcp": {
+    "enabled": true,
+    "servers": [
+      {
+        "name": "local-tools",
+        "type": "stdio",
+        "command": "python",
+        "args": [".opencode/tools/container_exec.py"]
+      }
+    ]
+  }
+}

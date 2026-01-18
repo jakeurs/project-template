@@ -1,0 +1,29 @@
+{
+    "$schema": "https://opencode.ai/config.json",
+    "provider": {
+        "lmstudio": {
+            "npm": "@ai-sdk/openai-compatible",
+            "name": "LM Studio (local)",
+            "options": {
+                "baseURL": "http://host.docker.internal:1234/v1"
+            },
+            "models": {
+                "qwen3-code-reasoning-4b-i1": {
+                    "name": "qwen3-code-reasoning-4b-i1"
+                },
+                "qwen3-coder-30b-a3b-instruct_moe": {
+                    "name": "qwen3-coder-30b-a3b-instruct_moe"
+                },
+                "qwen3-esper3-reasoning-coder-instruct-21b-brainstorm20x-128k-ctx-i1": {
+                    "name": "esper3-21b"
+                },
+                "openai/gpt-oss-20b": {
+                    "name": "openai/gpt-oss-20b"
+                },
+                "essentialai/rnj-1": {
+                    "name": "rnj-1"
+                }
+            }
+        }
+    }
+}

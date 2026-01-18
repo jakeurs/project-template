@@ -1,0 +1,24 @@
+[agent]
+model = "lmstudio-local" 
+provider = "lmstudio"
+
+# Define the custom provider
+[provider.lmstudio]
+npm = "@ai-sdk/openai-compatible"  #
+name = "LM Studio"
+
+[provider.lmstudio.options]
+baseURL = "http://host.docker.internal:1234/v1" #
+apiKey = "lm-studio" 
+
+[provider.lmstudio.models]
+# Map your specific model loaded in LM Studio
+"lmstudio-local" = { name = "qwen3-coder-30b-a3b-instruct_moe" }
+
+[workspace]
+root = "/workspace"
+auto_save = true
+
+[tools]
+enabled = ["container_exec", "ask_gemini"]
+directory = ".opencode/tools"
